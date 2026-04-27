@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Exponer el puerto configurado
-EXPOSE 3063
+EXPOSE 3040
 
 # Comando para iniciar la aplicación con Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:3063
+CMD ["gunicorn", "--bind", "0.0.0.0:3040
