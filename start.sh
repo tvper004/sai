@@ -19,7 +19,7 @@ RAW_COUNT=$(ls data/raw/*.json 2>/dev/null | wc -l | tr -d ' ')
 echo "📂 Raw pages: $RAW_COUNT"
 
 # Start Flask
-PORT=${FLASK_PORT:-3040}
+PORT=${FLASK_PORT:-3063}
 echo "🚀 Starting on http://0.0.0.0:$PORT"
 echo ""
 
