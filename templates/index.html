@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="SophosLLM — Consultor inteligente de documentación técnica Sophos. Configuraciones, permisos y solución de errores para Firewall, Endpoint, Server y más." />
+  <meta name="theme-color" content="#13151a" />
+  <title>SophosLLM — Consultor Técnico Sophos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 8v8c0 7 5.5 12.5 12 14 6.5-1.5 12-7 12-14V8L16 2z" fill="#C8102E"/><path d="M11 16l3 3 7-7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="logo-text"><span class="logo-sophos">Sophos</span><span class="logo-llm">LLM</span></div>
+    </div>
+    <button class="sidebar-toggle-close" id="sidebarClose" aria-label="Cerrar menú">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" id="navChat" data-view="chat">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+      <span class="nav-label">Consultor IA</span>
+    </button>
+    <button class="nav-item" id="navLibrary" data-view="library">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span>
+      <span class="nav-label">Biblioteca</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="status-badge" id="statusBadge">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">Verificando...</span>
+    </div>
+    <div class="sidebar-version">v2.0 · <span id="kbCountSidebar">...</span> docs</div>
+  </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ══ MAIN ═════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <h1 class="topbar-title" id="topbarTitle">Consultor IA</h1>
+    </div>
+
+    <!-- Chat: product tabs -->
+    <div class="product-tabs" id="productTabs">
+      <button class="product-tab active" data-product="">Todos</button>
+      <button class="product-tab" data-product="firewall">Firewall</button>
+      <button class="product-tab" data-product="endpoint">Endpoint</button>
+      <button class="product-tab" data-product="server">Server</button>
+      <button class="product-tab" data-product="email">Email</button>
+    </div>
+
+    <!-- Library: search + breadcrumb -->
+    <div class="lib-topbar" id="libTopbar" style="display:none;">
+      <div class="lib-breadcrumb" id="libBreadcrumb">
+        <span>Biblioteca local</span>
+      </div>
+      <div class="lib-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="libSearchInput" placeholder="Buscar en documentación..." autocomplete="off" />
+      </div>
+    </div>
+  </header>
+
+  <!-- ── CHAT VIEW ── -->
+  <section class="view view-chat active" id="viewChat">
+    <div class="welcome-state" id="welcomeState">
+      <div class="welcome-icon">
+        <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#1e2028" stroke="#2a2d3a" stroke-width="1"/><path d="M32 16L18 24v10c0 8.5 6.5 15 14 17 7.5-2 14-8.5 14-17V24L32 16z" fill="#C8102E"/><path d="M26 32l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2 class="welcome-title">Consultor Técnico Sophos</h2>
+      <p class="welcome-subtitle">Haz una pregunta técnica sobre cualquier producto Sophos.<br/>Configuraciones, errores, permisos y procedimientos.</p>
+      <div class="quick-prompts">
+        <button class="quick-prompt" data-prompt="¿Cómo instalar el agente Sophos Endpoint en Windows mediante GPO?">🖥️ Instalar agente por GPO</button>
+        <button class="quick-prompt" data-prompt="¿Cómo configurar una política de firewall para bloquear tráfico por país en Sophos Firewall?">🔥 Política firewall por país</button>
+        <button class="quick-prompt" data-prompt="¿Cómo instalar el agente Sophos Endpoint en Windows?">⬇️ Instalar agente Endpoint</button>
+        <button class="quick-prompt" data-prompt="Error de certificado SSL en Sophos Firewall, cómo solucionarlo">🔒 Error certificado SSL</button>
+        <button class="quick-prompt" data-prompt="¿Cómo configurar autenticación MFA en Sophos Central?">🔑 Configurar MFA Central</button>
+        <button class="quick-prompt" data-prompt="¿Cómo crear una VPN SSL en Sophos Firewall?">🌐 VPN SSL Sophos Firewall</button>
+      </div>
+    </div>
+    <div class="messages" id="messages" role="log" aria-live="polite" style="display:none;"></div>
+  </section>
+
+  <!-- ── LIBRARY VIEW ── -->
+  <section class="view view-library" id="viewLibrary" style="display:none;">
+
+    <!-- Panel: Categories -->
+    <div class="lib-panel" id="libPanelCats">
+      <div class="lib-grid" id="libCatGrid">
+        <!-- Populated by JS -->
+        <div class="lib-loading">Cargando documentación local...</div>
+      </div>
+    </div>
+
+    <!-- Panel: Article list -->
+    <div class="lib-panel" id="libPanelList" style="display:none;">
+      <div class="lib-articles" id="libArticleList"></div>
+      <div class="lib-pagination" id="libPagination"></div>
+    </div>
+
+    <!-- Panel: Article reader -->
+    <div class="lib-panel lib-reader-panel" id="libPanelReader" style="display:none;">
+      <div class="lib-reader" id="libReader"></div>
+    </div>
+
+    <!-- Panel: Search results -->
+    <div class="lib-panel" id="libPanelSearch" style="display:none;">
+      <div class="lib-search-results" id="libSearchResults"></div>
+    </div>
+
+  </section>
+
+  <!-- ── INPUT (chat only) ── -->
+  <div class="input-area" id="inputArea">
+    <div class="input-wrap">
+      <div class="image-preview-strip" id="imagePreviewStrip" style="display:none;">
+        <div class="image-preview-item">
+          <img id="imagePreviewThumb" src="" alt="Captura adjunta" />
+          <button class="image-remove-btn" id="imageRemoveBtn" aria-label="Eliminar imagen">×</button>
+        </div>
+      </div>
+      <div class="input-row">
+        <label class="upload-btn" for="imageInput" title="Adjuntar captura de pantalla">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+        </label>
+        <textarea id="chatInput" placeholder="Consulta sobre configuraciones, errores o procedimientos Sophos..." rows="1" maxlength="2000"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="Enviar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        <span class="sources-info" id="sourcesInfo"></span>
+        <span class="char-count" id="charCount"></span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" style="display:none;">
+  <button class="lightbox-close" id="lightboxClose">×</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

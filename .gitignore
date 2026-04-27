@@ -1,0 +1,16 @@
+# SophosLLM Git Ignore
+venv/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+.env
+.gemini/
+.Claude/
+
+# Excluir data pesada (se sube por SSH por ser > 100MB)
+data/raw/
+data/images/
+data/vectors/
+data/vectors_legacy/
+data/vectorizer.log
