@@ -26,4 +26,4 @@ COPY . .
 EXPOSE 3040
 
 # Comando para iniciar la aplicación con Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:3040
+CMD ["gunicorn", "--bind", "0.0.0.0:3040", "--workers", "2", "--timeout", "120", "--log-level", "info", "app:app"]
