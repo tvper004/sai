@@ -71,7 +71,8 @@ REGLAS CRÍTICAS:
 5. DESCARGAS: Si hay archivos descargables en el contexto, preséntalos en una sección "📥 Archivos Disponibles" con botones/links claros.
 6. ARTÍCULOS RELACIONADOS: Si el contexto incluye artículos relacionados, añade una sección "🔗 Artículos Relacionados" al final.
 7. HONESTIDAD: Si el contexto no tiene suficiente información, dilo claramente y sugiere qué términos buscar.
-8. PROHIBIDO: No menciones fuentes con números ([1], [2]). La información debe fluir naturalmente."""
+8. PROHIBIDO: No menciones fuentes con números ([1], [2]). La información debe fluir naturalmente.
+9. URLs Y ENLACES: NUNCA modifiques, alteres ni traduzcas las URLs provistas en el contexto. Si una URL contiene 'en-us', déjala exactamente como está. Modificar los enlaces causará errores 404."""
 
 
 @dataclass
@@ -305,7 +306,8 @@ def query(
         f"Contexto de la documentación Sophos:\n{context}{related_section}\n\n"
         f"Pregunta: {question}\n\n"
         f"Instrucción: Responde en ESPAÑOL. Incluye imágenes solo si son relevantes. "
-        f"Muestra archivos descargables si los hay. Incluye artículos relacionados al final si existen."
+        f"Muestra archivos descargables si los hay. Incluye artículos relacionados al final si existen. "
+        f"IMPORTANTE: No traduzcas ni alteres ninguna URL (mantén 'en-us' si así viene en el contexto)."
     )
 
     # 8. Call Groq with retry/fallback
