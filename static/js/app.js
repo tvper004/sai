@@ -96,7 +96,8 @@ el.imageRemoveBtn.addEventListener('click', () => {
 // ── Markdown ─────────────────────────────────────
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function md(text){
+function md(text, sources=[]){
+  const sourceUrls = new Set(sources.map(s => s.url));
   let h = text
     .replace(/```(\w*)\n?([\s\S]*?)```/g, (_,l,c) => `<pre><code>${esc(c.trim())}</code></pre>`)
     .replace(/`([^`]+)`/g, (_,c) => `<code>${esc(c)}</code>`)
@@ -104,7 +105,12 @@ function md(text){
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_,alt,src) =>
       `<img src="${src}" alt="${esc(alt)}" loading="lazy" title="${esc(alt)}" />`)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+      if(sourceUrls.has(url)){
+        return `<a href="javascript:void(0)" onclick="openArticleModal('${encodeURIComponent(url)}')">${label}</a>`;
+      }
+      return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`;
+    })
     .replace(/^---$/gm,'<hr style="border:none;border-top:1px solid var(--border);margin:.75rem 0">')
     .replace(/^\d+\. (.+)$/gm,'<li>$1</li>').replace(/^[-*] (.+)$/gm,'<li>$1</li>')
     .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
@@ -127,12 +133,18 @@ function appendMsg(role, content, meta={}){
   const avatar = role==='bot'
     ? `<div class="msg-avatar bot"><svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 8v8c0 7 5.5 12.5 12 14 6.5-1.5 12-7 12-14V8L16 2z" fill="white"/><path d="M11 16l3 3 7-7" stroke="#C8102E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
     : `<div class="msg-avatar user">Tú</div>`;
-  let body = role==='bot' ? md(content) : `<p>${esc(content)}</p>`;
+  let body = role==='bot' ? md(content, meta.sources||[]) : `<p>${esc(content)}</p>`;
   if (meta.downloads?.length){
     body += `<div class="download-section"><h4>📥 Archivos Disponibles</h4>${meta.downloads.slice(0,8).map(d=>dlBtn(d.url,d.text)).join('')}</div>`;
   }
   if (meta.relatedLinks?.length){
-    body += `<div class="related-links"><h4>🔗 Artículos Relacionados</h4>${meta.relatedLinks.slice(0,5).map(l=>`<a href="${l.url}" class="related-link" target="_blank" rel="noopener">→ ${esc(l.text)}</a>`).join('')}</div>`;
+    const sourceUrls = new Set((meta.sources||[]).map(s=>s.url));
+    body += `<div class="related-links"><h4>🔗 Artículos Relacionados</h4>${meta.relatedLinks.slice(0,5).map(l=>{
+      if(sourceUrls.has(l.url)){
+        return `<a href="javascript:void(0)" class="related-link" onclick="openArticleModal('${encodeURIComponent(l.url)}')">→ ${esc(l.text)}</a>`;
+      }
+      return `<a href="${l.url}" class="related-link" target="_blank" rel="noopener">→ ${esc(l.text)}</a>`;
+    }).join('')}</div>`;
   }
   const metaTxt = meta.model ? `${meta.model} · ${meta.sources||0} fuentes · ${meta.time||''}s` : '';
   div.innerHTML = `${avatar}<div><div class="msg-bubble">${body}</div>${metaTxt?`<div class="msg-meta">${esc(metaTxt)}</div>`:''}</div>`;
@@ -190,6 +202,34 @@ function closeLightbox(){ el.lightbox.style.display='none'; }
 el.lightboxClose.addEventListener('click', closeLightbox);
 el.lightbox.addEventListener('click', e=>{ if(e.target===el.lightbox) closeLightbox(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox(); });
+
+// ── Article Modal ────────────────────────────────
+const articleModal = $('articleModal');
+const articleModalContent = $('articleModalContent');
+const articleModalClose = $('articleModalClose');
+
+async function openArticleModal(urlOrHash){
+  articleModal.style.display = 'flex';
+  articleModalContent.innerHTML = '<div style="text-align:center;padding:2rem;">Cargando información local...</div>';
+  try {
+    const res = await fetch(`/api/library/article/${urlOrHash}`);
+    const data = await res.json();
+    if(data.error){ articleModalContent.innerHTML = `<p>${esc(data.error)}</p>`; return; }
+    
+    let html = `<div style="padding:1rem"><h1 class="lib-reader" style="font-size:1.15rem;font-weight:700;margin-bottom:1rem">${esc(data.title)}</h1>`;
+    if(data.url) html += `<div style="margin-bottom:1rem;"><a href="${data.url}" target="_blank" rel="noopener" style="font-size:.8rem;color:#5b9bd5;text-decoration:none">Ver en web oficial Sophos ↗</a></div>`;
+    html += `<div class="lib-reader">${md(data.text || '')}</div>`;
+    html += '</div>';
+    articleModalContent.innerHTML = html;
+  } catch(e) {
+    articleModalContent.innerHTML = `<p>Error: ${esc(e.message)}</p>`;
+  }
+}
+
+function closeArticleModal(){ articleModal.style.display = 'none'; }
+articleModalClose.addEventListener('click', closeArticleModal);
+articleModal.addEventListener('click', e=>{ if(e.target===articleModal) closeArticleModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeArticleModal(); });
 
 // ════════════════════════════════════════════════
 // BIBLIOTECA — Local data panels
